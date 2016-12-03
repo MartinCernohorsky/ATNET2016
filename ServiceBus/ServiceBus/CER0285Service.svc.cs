@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Runtime.Serialization;
 using System.ServiceModel;
 using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 using SharedLibs.DataContracts;
 
@@ -18,58 +20,147 @@ namespace ServiceBus
 
         public Student GetStudent(Guid guid)
         {
-            var xml = XDocument.Load("~/App_Data/testfile.xml");
+            //Ok nacteno. Relativni "~/App_Data/testfile.xml" kdyz zbude cas
+            var xml = XDocument.Load(@"D:\Visual Studio workplace\testFork\ServiceBus\ServiceBus\App_Data\testfile.xml");
 
-            var query = from c in xml.Root.Descendants("catalog")
-                where c.Name == "Martin"
-                select c.Element("name").Value;
+           
+
+            var query = from item in xml.Descendants("student")
+                        where item.Element("id").Value==guid.ToString()
+                        select new Student()
+                        {
+                            Id = Guid.Parse(item.Element("id").Value),
+                            Name = item.Element("name").Value,
+                            Surename = item.Element("surename").Value,
+                            City = item.Element("city").Value,
+                            Age = (int)item.Element("age"),
+                            Result = Result.Success("ok")
+                        };
+           
+            
 
             SharedLibs.DataContracts.Student s = new Student();
 
-            foreach (string x in query)
-            {
-                s.Name = x;
+            foreach (var x in query)
+            {//tohle neni idealni ale nejak to nefungovalo jinak
+                s.Name = x.Name;
+                s.Id = x.Id;
+                s.Surename = x.Surename;
+                s.City = x.City;
+                s.Age = x.Age;
+                s.Result = x.Result;
             }
-
-            return new SharedLibs.DataContracts.Student() {};
+            
+            return s;
         }
 
         public List<Student> GetAllStudents()
         {
-            var list = new List<Student>();
-
-            //TODO projit query foreach a vratit zaznamy
-
-            return list;
+            try
+            {
+                var xml = XDocument.Load(@"D:\Visual Studio workplace\testFork\ServiceBus\ServiceBus\App_Data\testfile.xml");
+                var query = from item in xml.Descendants("student")
+                            select new Student()
+                            {
+                                Id = Guid.Parse(item.Element("id").Value),
+                                Name = item.Element("name").Value,
+                                Surename = item.Element("surename").Value,
+                                City = item.Element("city").Value,
+                                Age = (int)item.Element("age"),
+                                Result = Result.Success("ok")
+                            };
+                //var list = query.ToList();
+                return query.ToList();
+            }
+            catch (XmlException xmlex)
+            {
+                //TOhle pouzivam pro email dole uz vracim neco normalniho. snad.
+                return new List<Student>() {new Student() { Result = Result.ErrorFormat("XmlException {0}",xmlex.Message)} };
+            }
         }
 
-        public List<Student> GetAllStudentsSorted()
+        public Students GetAllStudentsSorted()
         {
-            var list = new List<Student>();
+            try
+            {
+                var xml =
+                    XDocument.Load(@"D:\Visual Studio workplace\testFork\ServiceBus\ServiceBus\App_Data\testfile.xml");
+                var query = from item in xml.Descendants("student")
+                    select new Student()
+                    {
+                        Id = Guid.Parse(item.Element("id").Value),
+                        Name = item.Element("name").Value,
+                        Surename = item.Element("surename").Value,
+                        City = item.Element("city").Value,
+                        Age = (int) item.Element("age"),
+                        Result = Result.Success("ok")
+                    };
 
-            //TODO projit query kde bude order by a pak foreach a vratit zaznamy
+                //...
+                var list = query.OrderBy(o=> o.Surename).ToList();
 
-            return list;
+                return new Students() {list = list, Result = Result.Success()};
+            }
+            catch (ArgumentNullException aex)
+            {
+                return new Students() { Result = Result.FatalFormat("ArgumentNullException {0}", aex.Message) };
+            }
+            catch (XmlException xe)
+            {
+                return new Students() { Result = Result.FatalFormat("XmlException {0}", xe.Message) };
+            }
+            catch (Exception e)
+            {
+                return new Students() { Result = Result.FatalFormat("General exception {0}", e.Message) };
+            }
         }
-
-        public List<Student> GetStudentsByCity(string cityname)
+        
+        public Students GetStudentsByCity(string cityname)
         {
-            var list = new List<Student>();
+            try
+            {
+                var xml = XDocument.Load(@"D:\Visual Studio workplace\testFork\ServiceBus\ServiceBus\App_Data\testfile.xml");
+                var query = from item in xml.Descendants("student")
+                            where item.Element("city").Value == cityname
+                            select new Student()
+                            {
+                                Id = Guid.Parse(item.Element("id").Value),
+                                Name = item.Element("name").Value,
+                                Surename = item.Element("surename").Value,
+                                City = item.Element("city").Value,
+                                Age = (int)item.Element("age")
+                            };
 
-            //TODO projit query a klauze where city is not null foreach a vratit zaznamy
 
-            return list;
+                return new Students() {list = query.ToList(), Result = Result.Success("Uz asi vim na co je to pluralize.")};
+            }
+            catch (ArgumentNullException aex)
+            {
+                return new Students() {Result = Result.FatalFormat("ArgumentNullException {0}",aex.Message)};
+            }
+            catch (XmlException xe)
+            {
+                return new Students() {Result = Result.FatalFormat("XmlException {0}",xe.Message)};
+            }
+            catch (Exception e)
+            {
+                return new Students() {Result = Result.FatalFormat("General exception {0}", e.Message)};
+            }
         }
-
+        /// <summary>
+        /// Posle email s kolekci studentu
+        /// </summary>
+        /// <returns></returns>
         public Result SendStudentsByEmail()
         {
             try
             {
-                MailMessage mail = new MailMessage(new MailAddress("cer0285@vsb.cz"), new MailAddress("cer0285@vsb.cz"));
-                mail.IsBodyHtml = true;
+                var mail = new MailMessage(new MailAddress("cer0285@vsb.cz"), new MailAddress("cer0285@vsb.cz"))
+                {
+                    IsBodyHtml = true
+                };
 
-                string html = "...";
-                //TODO presypat tu kolekci
+                string html = GetAllStudents().Aggregate("", (current, x) => current + ("Jmeno: " + x.Name + "Prijmeni: " + x.Surename + "ID: " + x.Id + "city" + x.City + "age: " + x.Age + "\n"));
 
                 AlternateView htmlView = AlternateView.CreateAlternateViewFromString(html, null,
                     MediaTypeNames.Text.Html);

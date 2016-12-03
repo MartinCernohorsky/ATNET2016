@@ -19,10 +19,10 @@ namespace ServiceBus
         List<SharedLibs.DataContracts.Student> GetAllStudents();
 
         [OperationContract]
-        List<SharedLibs.DataContracts.Student> GetAllStudentsSorted();
+        SharedLibs.DataContracts.Students GetAllStudentsSorted();
 
         [OperationContract]
-        List<SharedLibs.DataContracts.Student> GetStudentsByCity(string cityname);
+        SharedLibs.DataContracts.Students GetStudentsByCity(string cityname);
 
         [OperationContract]
         SharedLibs.DataContracts.Result SendStudentsByEmail();

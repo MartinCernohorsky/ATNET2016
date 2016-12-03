@@ -85,6 +85,7 @@
     <Content Include="App_Data\Database_log.ldf">
       <DependentUpon>Database.mdf</DependentUpon>
     </Content>
+    <Content Include="App_Data\file.xml" />
     <Content Include="App_Data\testfile.xml" />
     <Content Include="BasketService.svc" />
     <Content Include="CER0285Service.svc" />

@@ -26,7 +26,7 @@ namespace SharedLibs.DataContracts
         /// Surname of user
         /// </summary>
         [DataMember]
-        public string Surname { set; get; }
+        public string Surename { set; get; }
 
 
         /// <summary>

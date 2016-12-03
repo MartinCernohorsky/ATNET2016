@@ -58,6 +58,7 @@
     <Compile Include="DataContracts\BasketItem.cs" />
     <Compile Include="DataContracts\BillingInformation.cs" />
     <Compile Include="DataContracts\Campaign.cs" />
+    <Compile Include="DataContracts\Students.cs" />
     <Compile Include="DataContracts\DTO.cs" />
     <Compile Include="DataContracts\IPluralized.cs" />
     <Compile Include="DataContracts\Order.cs" />

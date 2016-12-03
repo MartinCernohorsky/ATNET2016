@@ -1,0 +1,14 @@
+<catalog>
+   <student id=b3652818-0878-4173-b9a7-3f202fcf80dd>
+      <name>Martin</name>
+      <surename>Cernohorsky</surename>
+      <city>Opava</city>
+	<age>25</age>
+   </student>
+<student id=cf713aab-4da7-4f66-8957-e78b0d6bd352>
+      <name>Tereza</name>
+      <surename>sure</surename>
+      <city>Brno</city>
+	<age>26</age>
+   </student>
+</catalog>
